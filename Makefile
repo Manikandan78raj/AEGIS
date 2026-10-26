@@ -47,14 +47,12 @@ test: ## Run unit tests (pytest)
 	fi
 
 .PHONY: up
-up: ## Start the development cluster & stack (Phase 1+)
-	@echo "[AEGIS] 'up' is planned for Phase 1 (kind cluster + monitoring stack)."
-	@echo "Current status: Phase 0 (Repository Foundation)."
+up: ## Start the dedicated aegis-local kind cluster
+	@kind create cluster --name aegis-local --config deploy/kind/aegis-cluster-config.yaml
 
 .PHONY: down
-down: ## Tear down the development cluster & stack (Phase 1+)
-	@echo "[AEGIS] 'down' is planned for Phase 1 (kind cluster teardown)."
-	@echo "Current status: Phase 0 (Repository Foundation)."
+down: ## Tear down the aegis-local kind cluster
+	@kind delete cluster --name aegis-local
 
 .PHONY: clean
 clean: ## Remove temporary files, caches, and build artifacts

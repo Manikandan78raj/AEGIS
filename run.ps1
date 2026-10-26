@@ -65,12 +65,15 @@ switch ($Target.ToLower()) {
         Invoke-Pytest
     }
     "up" {
-        Write-Host "[AEGIS] 'up' is planned for Phase 1 (kind cluster + monitoring stack)." -ForegroundColor Yellow
-        Write-Host "Current status: Phase 0 (Repository Foundation)."
+        Write-Host "--> Running pre-flight checks..." -ForegroundColor Cyan
+        & powershell -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "deploy\scripts\check-prereqs.ps1")
+        Write-Host "--> Creating kind cluster 'aegis-local'..." -ForegroundColor Cyan
+        kind create cluster --name aegis-local --config (Join-Path $PSScriptRoot "deploy\kind\aegis-cluster-config.yaml")
+        Write-Host "Cluster 'aegis-local' created." -ForegroundColor Green
     }
     "down" {
-        Write-Host "[AEGIS] 'down' is planned for Phase 1 (kind cluster teardown)." -ForegroundColor Yellow
-        Write-Host "Current status: Phase 0 (Repository Foundation)."
+        Write-Host "--> Tearing down 'aegis-local' cluster..." -ForegroundColor Cyan
+        & powershell -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "deploy\scripts\teardown-cluster.ps1")
     }
     "clean" {
         Write-Host "--> Cleaning cache and temporary files..." -ForegroundColor Cyan

@@ -1,0 +1,37 @@
+# ==============================================================================
+# AEGIS Dedicated Local Sandbox Cluster Configuration
+# Cluster Name: aegis-local
+# Topology: 2 nodes (1 control-plane, 1 worker)
+# Kubernetes: v1.32.0 (Pinned by immutable sha256 digest)
+# ==============================================================================
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: aegis-local
+
+nodes:
+  - role: control-plane
+    image: kindest/node:v1.32.0@sha256:c48c62eac5da28cdadcf560d1d8616cfa6783b58f0d94cf63ad1bf49600cb027
+    kubeadmConfigPatches:
+      - |
+        kind: ClusterConfiguration
+        apiServer:
+          extraArgs:
+            # Enable runtime config for admission policies
+            runtime-config: "admissionregistration.k8s.io/v1beta1=true"
+    extraPortMappings:
+      # Optional NodePort fallbacks to 127.0.0.1 for local browser access
+      - containerPort: 30080
+        hostPort: 8080
+        listenAddress: "127.0.0.1"
+        protocol: TCP
+      - containerPort: 30000
+        hostPort: 3000
+        listenAddress: "127.0.0.1"
+        protocol: TCP
+      - containerPort: 30090
+        hostPort: 9090
+        listenAddress: "127.0.0.1"
+        protocol: TCP
+
+  - role: worker
+    image: kindest/node:v1.32.0@sha256:c48c62eac5da28cdadcf560d1d8616cfa6783b58f0d94cf63ad1bf49600cb027
