@@ -1,0 +1,113 @@
+# ==============================================================================
+# AEGIS .gitignore
+# ==============================================================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Testing & Coverage
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.cover
+nosetests.xml
+coverage.xml
+
+# Node.js & Frontend
+node_modules/
+web/node_modules/
+web/dist/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Datasets & Large Data (Preserve schemas and scripts, ignore raw/generated runs)
+data/raw/*
+data/processed/*
+data/runs/*
+data/benchmark/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/runs/.gitkeep
+!data/benchmark/.gitkeep
+*.parquet
+*.feather
+*.csv.gz
+
+# Model Weights & MLflow Artifacts
+mlruns/
+mlartifacts/
+models/*.pt
+models/*.pth
+models/*.onnx
+models/*.pkl
+models/*.joblib
+models/*.bin
+!models/.gitkeep
+
+# Local Databases & Persistent Volumes
+*.sqlite3
+*.db
+pgdata/
+loki-data/
+prometheus-data/
+
+# Kubernetes & Local Cluster Artifacts
+*.kubeconfig
+kubeconfig*
+.kind/
+cluster-state/
+*.sock
+
+# Credentials, Secrets & Local Environment
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+secrets/
+
+# IDE & OS Artifacts
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini

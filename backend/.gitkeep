@@ -1,0 +1,2 @@
+# AEGIS Backend Service Directory
+# Entry points: aegis-api (REST/SSE), aegis-engine (15s loop), executor, copilot

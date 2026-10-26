@@ -1,0 +1,2 @@
+# AEGIS Inference Directory
+# Model serving microservice exposing /v1/score, /v1/rca, and /v1/recommend.
