@@ -45,7 +45,11 @@
 
 ## 3. Real Verification Evidence (Phase 0)
 
-* **Git**: `git version 2.47.0.windows.2` — Repo initialized on `main`.
+* **Git**: `git version 2.47.0.windows.2` — Repo on `main`, tracked with `origin/main`.
+  * Remote Origin: `https://github.com/Manikandan78raj/AEGIS.git`
+  * Upstream Base: `d57b5c1` ("Add project title and description to README")
+  * Foundation Commit: `35a17f7` ("feat(core): initialize AEGIS Phase 0 repository foundation")
+  * Remote Push: Clean fast-forward push (`d57b5c1..35a17f7 main -> main`), working tree synced.
 * **Python**: `Python 3.13.2` — pip `25.1.1` in isolated `.venv`.
 * **Node.js**: `v24.5.0` — npm `11.5.1`.
 * **Container Runtime**: `Docker version 29.6.2, build dfc4efb`.
