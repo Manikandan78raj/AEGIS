@@ -1,0 +1,173 @@
+# AEGIS Phase 1 — Milestone 3: Prometheus & Grafana Configuration
+# Pinned Chart: prometheus-community/kube-prometheus-stack v92.14.0
+# Target: kind-aegis-local (2-node cluster, 16 GB laptop constraints)
+
+nameOverride: "aegis-prom"
+fullnameOverride: "aegis-monitoring"
+
+# Alertmanager is deferred to later milestones to preserve laptop RAM
+alertmanager:
+  enabled: false
+
+# Prometheus Operator configuration
+prometheusOperator:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+# Core Prometheus Server Instance
+prometheus:
+  enabled: true
+  prometheusSpec:
+    # Retention strictly tuned to 3 days per AEGIS specification
+    retention: 3d
+    retentionSize: 4GiB
+    
+    # Resource limits strictly bounded per AEGIS memory budget (<= 512 MiB)
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+    # Local storage PVC using kind's standard (local-path) storage class
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: standard
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+
+    # Allow discovery of ServiceMonitors and PodMonitors across all namespaces
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorNamespaceSelector: {}
+    podMonitorNamespaceSelector: {}
+    ruleSelectorNilUsesHelmValues: false
+
+    # Service configuration (Local cluster-only access)
+    service:
+      type: ClusterIP
+      port: 9090
+
+# Grafana Dashboard Configuration
+grafana:
+  enabled: true
+  adminPassword: "prom-operator"
+  
+  # Resource limits strictly bounded per AEGIS memory budget (<= 256 MiB)
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  # Aggressive Go GC and memory limit tuning to ensure Grafana never exceeds 256 MiB
+  env:
+    GOGC: "50"
+    GOMEMLIMIT: "210MiB"
+
+  # Lightweight Grafana configuration (disable alerting engine to save ~80 MiB RAM)
+  grafana.ini:
+    analytics:
+      reporting_enabled: false
+      check_for_updates: false
+      check_for_plugin_updates: false
+    unified_alerting:
+      enabled: false
+    alerting:
+      enabled: false
+
+  # Local-only access via ClusterIP (port-forwarding required)
+  service:
+    type: ClusterIP
+    port: 80
+
+  # Ephemeral storage to avoid unnecessary volume consumption on laptop
+  persistence:
+    enabled: false
+
+  # Direct provisioning of Prometheus data source via ConfigMap (no sidecars needed)
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://aegis-monitoring-prometheus:9090
+          access: proxy
+          isDefault: true
+          jsonData:
+            timeInterval: "15s"
+
+  # Disable sidecars to eliminate extra container memory overhead
+  sidecar:
+    datasources:
+      enabled: false
+    dashboards:
+      enabled: false
+
+# Kubernetes Cluster Component Scrapers (Tuned for kind multi-node topology)
+kubelet:
+  enabled: true
+  serviceMonitor:
+    cAdvisor: true
+    resource: false
+
+kubeApiServer:
+  enabled: true
+
+# In kind, etcd, controller-manager, scheduler, and kube-proxy bind to 127.0.0.1
+# Disabling their scrapers prevents scraping errors and preserves memory
+kubeControllerManager:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeEtcd:
+  enabled: false
+
+kubeProxy:
+  enabled: false
+
+# Lightweight Kubernetes State Exporter (~30-50 MiB)
+kubeStateMetrics:
+  enabled: true
+
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+# Lightweight Node Resource Exporter (~15-30 MiB per node daemonset)
+nodeExporter:
+  enabled: true
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+# Disable heavy default alerting rules to reduce Prometheus CPU/memory evaluation loops
+defaultRules:
+  create: false

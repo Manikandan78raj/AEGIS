@@ -75,3 +75,15 @@ This document records the foundational architectural decisions for AEGIS, their 
   * **Split by run, never by row**: All training, validation, and test splits are partitioned by complete chaos experiment runs.
   * **Benign deployments**: Normal runs must include benign deployments at random intervals to prevent models from learning "recent deploy = failure".
   * **Locked test set**: Final evaluation runs are held out and evaluated only once at project completion.
+
+---
+
+### ADR-008: Lightweight Prometheus & Grafana Stack with Strict Memory Bounding
+* **Status**: Accepted
+* **Context**: Monitoring a 12-microservice Kubernetes cluster locally on a 16 GB laptop host requires full metric scraping (cAdvisor, kube-state-metrics, node-exporter) without exhausting Docker or host memory.
+* **Decision**: Deploy `prometheus-community/kube-prometheus-stack` pinned to `v92.14.0` in the `monitoring` namespace with strict resource limits:
+  * **Prometheus**: Memory limit $\le 512\text{ MiB}$ (requests $256\text{ MiB}$), CPU limit $500\text{m}$ (requests $100\text{m}$), retention strictly set to $3\text{ days}$ ($4\text{ GiB}$ max), backed by a $5\text{ GiB}$ PVC (`standard` local-path storage class).
+  * **Grafana**: Memory limit $\le 256\text{ MiB}$ (requests $128\text{ MiB}$), CPU limit $200\text{m}$ (requests $50\text{m}$). Disabled memory-heavy dashboard/datasource sidecars (provisioned declaratively via ConfigMap), disabled unified alerting engine, and tuned Go runtime (`GOMEMLIMIT=210MiB`, `GOGC=50`).
+  * **Alertmanager & Default Rules**: Alertmanager and heavy alerting evaluation rules are disabled in Milestone 3 to conserve CPU and RAM.
+  * **Local-Only Access**: Services expose ClusterIP only; access is via authenticated local `kubectl port-forward` commands.
+

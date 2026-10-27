@@ -71,6 +71,7 @@ def test_decisions_contain_core_adrs():
         "ADR-005",
         "ADR-006",
         "ADR-007",
+        "ADR-008",
     ]:
         assert adr in content, f"{adr} missing from DECISIONS.md"
 
@@ -91,3 +92,24 @@ def test_features_package_import():
     """Verify that the shared features package is importable."""
     assert hasattr(features, "__version__")
     assert features.__version__ == "0.1.0"
+
+
+def test_phase1_monitoring_files():
+    """Verify Phase 1 Milestone 3 monitoring configuration files exist and adhere to constraints."""
+    root = Path(__file__).parent.parent
+    ns_file = root / "deploy" / "monitoring" / "namespace.yaml"
+    values_file = root / "deploy" / "monitoring" / "prometheus-values.yaml"
+    deploy_script = root / "deploy" / "scripts" / "deploy-monitoring.ps1"
+
+    assert ns_file.is_file(), "deploy/monitoring/namespace.yaml missing"
+    assert values_file.is_file(), "deploy/monitoring/prometheus-values.yaml missing"
+    assert deploy_script.is_file(), "deploy/scripts/deploy-monitoring.ps1 missing"
+
+    ns_content = ns_file.read_text(encoding="utf-8")
+    assert 'aegis.io/managed: "true"' in ns_content or "aegis.io/managed: 'true'" in ns_content
+
+    values_content = values_file.read_text(encoding="utf-8")
+    assert "retention: 3d" in values_content
+    assert "memory: 512Mi" in values_content  # Prometheus limit
+    assert "memory: 256Mi" in values_content  # Grafana limit
+    assert "v92.14.0" in values_content
